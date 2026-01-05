@@ -9,6 +9,7 @@ public class AnimalData
     public string characteristics;
     public GameObject modelPrefab;
     public Sprite icon;
+    public float modelScale = 0.3f;  // Scale khusus untuk hewan ini
     
     public AnimalData(string name, string habitat, string food, string characteristics)
     {

@@ -75,6 +75,13 @@ crashlytics-build.properties
 .DS_Store
 .utmp/
 
+# Vuforia generated files
+QCAR/
+
+# Large 3D Models (>50MB) - use Git LFS or download separately
+Assets/Models/Animals/*.fbx
+Assets/Models/Animals/*.fbm/
+
 # Markdown files except README.md
 *.md
 !README.md

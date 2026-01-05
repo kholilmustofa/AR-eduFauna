@@ -16,7 +16,6 @@ public class AnimalCard : MonoBehaviour
     private AnimalData animalData;
     private int animalIndex;
     private Vector3 originalScale;
-    private bool isHovered = false;
     
     private void Awake()
     {
@@ -79,7 +78,6 @@ public class AnimalCard : MonoBehaviour
     
     public void OnPointerEnter()
     {
-        isHovered = true;
         if (highlightImage != null)
         {
             highlightImage.enabled = true;
@@ -92,7 +90,6 @@ public class AnimalCard : MonoBehaviour
     
     public void OnPointerExit()
     {
-        isHovered = false;
         if (highlightImage != null)
         {
             highlightImage.enabled = false;
@@ -110,6 +107,12 @@ public class AnimalCard : MonoBehaviour
         
         while (elapsed < duration)
         {
+            // Check if object still exists
+            if (this == null || gameObject == null)
+            {
+                yield break;
+            }
+            
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
             // Ease out back effect
@@ -118,6 +121,10 @@ public class AnimalCard : MonoBehaviour
             yield return null;
         }
         
-        transform.localScale = targetScale;
+        // Final check
+        if (this != null && gameObject != null)
+        {
+            transform.localScale = targetScale;
+        }
     }
 }

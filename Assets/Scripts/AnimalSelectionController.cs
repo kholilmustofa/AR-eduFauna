@@ -34,6 +34,9 @@ public class AnimalSelectionController : MonoBehaviour
             return;
         }
         
+        // Stop all running animations before clearing
+        StopAllCoroutines();
+        
         // Clear existing cards
         foreach (Transform child in animalGridContainer)
         {
@@ -95,6 +98,12 @@ public class AnimalSelectionController : MonoBehaviour
         // Wait for delay based on index
         yield return new WaitForSeconds(index * cardAnimationDelay);
         
+        // Check if card still exists after wait
+        if (card == null)
+        {
+            yield break;
+        }
+        
         // Scale animation
         CanvasGroup canvasGroup = card.GetComponent<CanvasGroup>();
         if (canvasGroup == null)
@@ -110,6 +119,12 @@ public class AnimalSelectionController : MonoBehaviour
         
         while (elapsed < duration)
         {
+            // Check if card still exists during animation
+            if (card == null)
+            {
+                yield break;
+            }
+            
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
             
@@ -121,8 +136,12 @@ public class AnimalSelectionController : MonoBehaviour
             yield return null;
         }
         
-        card.transform.localScale = Vector3.one;
-        canvasGroup.alpha = 1f;
+        // Final check before setting final values
+        if (card != null)
+        {
+            card.transform.localScale = Vector3.one;
+            canvasGroup.alpha = 1f;
+        }
     }
     
     private void OnAnimalSelected(int index)

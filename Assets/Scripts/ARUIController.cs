@@ -19,18 +19,14 @@ public class ARUIController : MonoBehaviour
     public TextMeshProUGUI habitatText;
     public TextMeshProUGUI foodText;
     public TextMeshProUGUI characteristicsText;
-    public Image animalIconImage;
     
     [Header("Instruction Text")]
     public TextMeshProUGUI instructionText;
     
-    private ARPlacementController placementController;
-    private bool isDetailPanelOpen = false;
+    private GameObject spawnedAnimal;
     
     private void Start()
     {
-        placementController = FindFirstObjectByType<ARPlacementController>();
-        
         // Setup buttons
         if (selectAnimalButton != null)
         {
@@ -65,6 +61,22 @@ public class ARUIController : MonoBehaviour
     
     private void Update()
     {
+        // Check if animal is spawned (look for spawned object in scene)
+        if (spawnedAnimal == null && GameManager.Instance != null && GameManager.Instance.selectedAnimal != null)
+        {
+            // Try to find spawned animal by prefab name
+            string prefabName = GameManager.Instance.selectedAnimal.modelPrefab?.name;
+            if (!string.IsNullOrEmpty(prefabName))
+            {
+                GameObject found = GameObject.Find(prefabName + "(Clone)");
+                if (found != null)
+                {
+                    spawnedAnimal = found;
+                    OnAnimalPlaced();
+                }
+            }
+        }
+        
         UpdateInstructionText();
     }
     
@@ -72,7 +84,7 @@ public class ARUIController : MonoBehaviour
     {
         if (instructionText == null) return;
         
-        if (placementController != null && placementController.IsAnimalPlaced())
+        if (spawnedAnimal != null)
         {
             instructionText.text = "Geser, putar, atau perbesar hewan dengan jari Anda";
         }
@@ -99,7 +111,7 @@ public class ARUIController : MonoBehaviour
     
     private void OnDetailButtonClicked()
     {
-        if (placementController == null || !placementController.IsAnimalPlaced())
+        if (spawnedAnimal == null)
         {
             // Show warning
             ShowWarning("Silakan tempatkan hewan terlebih dahulu!");
@@ -110,7 +122,6 @@ public class ARUIController : MonoBehaviour
         if (detailPanel != null)
         {
             detailPanel.SetActive(true);
-            isDetailPanelOpen = true;
             
             // Animate panel entrance
             AnimateDetailPanel(true);
@@ -154,10 +165,7 @@ public class ARUIController : MonoBehaviour
             characteristicsText.text = "<b>Karakteristik:</b>\n" + animal.characteristics;
         }
         
-        if (animalIconImage != null && animal.icon != null)
-        {
-            animalIconImage.sprite = animal.icon;
-        }
+        // Animal icon removed - not used
     }
     
     private void AnimateDetailPanel(bool show)
@@ -183,7 +191,6 @@ public class ARUIController : MonoBehaviour
         {
             StartCoroutine(ScalePanelAnimation(Vector3.zero, 0.2f, () => {
                 detailPanel.SetActive(false);
-                isDetailPanelOpen = false;
             }));
             StartCoroutine(FadeCanvasGroup(canvasGroup, 0f, 0.2f));
         }

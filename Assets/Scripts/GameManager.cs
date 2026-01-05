@@ -18,7 +18,23 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            InitializeAnimals();
+            
+            // Load icons for animals from Inspector
+            LoadIconsForExistingAnimals();
+            
+            // Debug: Check if model prefabs are assigned
+            Debug.Log($"[GameManager] Menggunakan {animals.Count} hewan dari Inspector");
+            foreach (var animal in animals)
+            {
+                if (animal.modelPrefab == null)
+                {
+                    Debug.LogError($"{animal.animalName} - Model Prefab KOSONG! Assign di Inspector!");
+                }
+                else
+                {
+                    Debug.Log($" {animal.animalName} - Model: {animal.modelPrefab.name}");
+                }
+            }
         }
         else
         {
@@ -26,47 +42,34 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    private void InitializeAnimals()
+    
+    private Sprite LoadAnimalIcon(string iconName)
     {
-        // Initialize animal data
-        // You can add more animals here or load from a database
-        if (animals.Count == 0)
+        // Load sprite from UI/Illustrations/Animals folder
+        // Note: The folder must be inside a Resources folder for this to work
+        // Alternative: Use direct reference in Inspector
+        Sprite sprite = Resources.Load<Sprite>($"UI/Illustrations/Animals/{iconName}");
+        
+        if (sprite == null)
         {
-            // Example animals - you'll need to assign prefabs and icons in the Inspector
-            animals.Add(new AnimalData(
-                "Gajah",
-                "Hutan tropis dan savana",
-                "Rumput, daun, buah-buahan",
-                "Mamalia terbesar di darat dengan belalai panjang yang digunakan untuk makan dan minum"
-            ));
-            
-            animals.Add(new AnimalData(
-                "Harimau",
-                "Hutan hujan tropis",
-                "Daging (karnivora)",
-                "Kucing besar dengan loreng hitam dan oranye, pemburu yang sangat tangkas"
-            ));
-            
-            animals.Add(new AnimalData(
-                "Panda",
-                "Hutan bambu pegunungan",
-                "Bambu",
-                "Beruang hitam putih yang menggemaskan, menghabiskan waktu untuk makan bambu"
-            ));
-            
-            animals.Add(new AnimalData(
-                "Jerapah",
-                "Savana Afrika",
-                "Daun akasia",
-                "Mamalia tertinggi dengan leher panjang untuk mencapai daun di pohon tinggi"
-            ));
-            
-            animals.Add(new AnimalData(
-                "Penguin",
-                "Antartika dan daerah dingin",
-                "Ikan dan krill",
-                "Burung yang tidak bisa terbang tetapi ahli berenang di air dingin"
-            ));
+            Debug.LogWarning($"Could not load icon: {iconName}. Make sure the image is in a Resources folder or assign it manually in the Inspector.");
+        }
+        
+        return sprite;
+    }
+    
+    
+    private void LoadIconsForExistingAnimals()
+    {
+        // Auto-load icons for animals that don't have icons yet
+        string[] iconNames = { "elephant", "lion", "orca", "pinguin", "zebra" };
+        
+        for (int i = 0; i < animals.Count && i < iconNames.Length; i++)
+        {
+            if (animals[i].icon == null)
+            {
+                animals[i].icon = LoadAnimalIcon(iconNames[i]);
+            }
         }
     }
     
