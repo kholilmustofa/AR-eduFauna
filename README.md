@@ -1,57 +1,38 @@
-# 🦁 Edu Fauna - AR Educational Application
+# 🐘 eduFauna - AR Educational App
 
-An Android Augmented Reality (AR) educational application built with Unity that introduces various fauna animals through an interactive and engaging learning experience using markerless AR technology.
-
-![Unity Version](https://img.shields.io/badge/Unity-6.0-blue)
-![Platform](https://img.shields.io/badge/Platform-Android-green)
-![AR Foundation](https://img.shields.io/badge/AR%20Foundation-6.0-orange)
+AR application for learning about animals using Unity and Vuforia Ground Plane.
 
 ## ✨ Features
 
-- 🎯 **Markerless AR** with plane detection
-- 🦁 **Multiple animal 3D models** with educational information
-- 📱 **Interactive touch controls** (drag, rotate, scale)
-- 🎨 **Child-friendly UI** design
-- 📚 **Educational content** in Indonesian
-- 🔊 **Audio support** for immersive experience
+- 🦁 **5 Interactive 3D Animals**: Elephant, Lion, Orca, Penguin, Zebra
+- 📱 **AR Ground Plane Detection**: Place animals on real-world surfaces
+- 🎮 **Touch Interactions**: 
+  - Drag to rotate
+  - Pinch to scale
+  - Move animals around
+- 📚 **Educational Information**: Learn about habitat, food, and characteristics
+- 🎨 **Beautiful UI**: Modern, intuitive interface
 
-## 🛠️ Technical Requirements
+## 🛠️ Tech Stack
 
-### Unity & Packages
-- **Unity 6 (6000.x)** - Recommended ⭐
-- **AR Foundation** (6.0.x or newer)
-- **ARCore XR Plugin** (6.0.x or newer)
-- **TextMeshPro** (Built-in for Unity 6)
+- **Unity**: 2021.3 or later
+- **Vuforia Engine AR**: Ground Plane detection
+- **C#**: Game logic and AR interactions
+- **TextMeshPro**: UI text rendering
 
-### Android Build Settings
-- **Minimum API Level**: Android 7.0 (API Level 24)
-- **Target API Level**: Android 13 (API Level 33) or newer
-- **Scripting Backend**: IL2CPP (Required)
-- **Target Architectures**: ARM64 (Required)
+## 📋 Requirements
 
-## 📁 Project Structure
+### Development:
+- Unity 2021.3 LTS or later
+- Vuforia Engine AR package
+- Android Build Support
 
-```
-Assets/
-├── Scenes/
-│   ├── SplashScreen.unity
-│   ├── AnimalSelection.unity
-│   └── ARScene.unity
-├── Scripts/
-│   ├── GameManager.cs
-│   ├── ARPlacementController.cs
-│   ├── ARAnimalInteraction.cs
-│   └── ARUIController.cs
-├── Prefabs/
-│   ├── Animals/
-│   └── AnimalCard.prefab
-└── UI/
-    ├── Fonts/
-    ├── Icons/
-    └── Buttons/
-```
+### Device:
+- Android 7.0 (API 24) or higher
+- ARCore compatible device
+- Good lighting conditions for plane detection
 
-## 🚀 Quick Start
+## 🚀 Setup
 
 ### 1. Clone Repository
 ```bash
@@ -60,81 +41,121 @@ cd AR-eduFauna
 ```
 
 ### 2. Open in Unity
-- Open Unity Hub
-- Click "Add" and select the project folder
-- Open with Unity 6 (6000.x)
+1. Open Unity Hub
+2. Click "Open" → Select project folder
+3. Wait for Unity to import assets
 
-### 3. Install Required Packages
-1. Open **Window > Package Manager**
-2. Install:
-   - AR Foundation (6.0.x)
-   - ARCore XR Plugin (6.0.x)
+### 3. Vuforia Setup
+1. Get Vuforia license key from [Vuforia Developer Portal](https://developer.vuforia.com/)
+2. In Unity: **GameObject** → **Vuforia Engine** → **AR Camera**
+3. Paste license key in **Vuforia Behaviour** component
 
-### 4. Configure AR Settings
-1. Go to **Edit > Project Settings > XR Plug-in Management**
-2. Enable **ARCore** for Android
-3. Configure **Player Settings > Android**:
-   - Scripting Backend: IL2CPP
-   - Target Architectures: ARM64
+### 4. Build Settings
+1. **File** → **Build Settings**
+2. **Platform**: Android
+3. **Switch Platform**
+4. **Player Settings**:
+   - Minimum API Level: Android 7.0 (API 24)
+   - Target API Level: Automatic (Highest Installed)
 
 ### 5. Build & Run
-1. **File > Build Settings**
-2. Switch to **Android**
-3. Click **Build and Run**
+1. Connect Android device via USB
+2. Enable **USB Debugging** on device
+3. **File** → **Build and Run**
+4. Install APK on device
 
-## 📱 How to Use
+## 🎮 How to Use
 
-1. **Launch** the app on your Android device
-2. **Select** an animal from the menu
-3. **Point** camera at a flat surface (floor/table)
-4. **Tap** to place the animal in AR
-5. **Interact**:
-   - Drag to move
-   - Two-finger rotate
-   - Pinch to scale
-6. **Learn** by tapping the info button
+1. **Launch App** on your Android device
+2. **Select Animal** from the animal selection screen
+3. **Scan Floor**: Point camera at a flat surface (floor, table)
+4. **Wait for Plane Detection**: Move device slowly to help detect the plane
+5. **Animal Appears**: The selected animal will appear on the detected plane
+6. **Interact**:
+   - **1 finger drag**: Rotate animal
+   - **2 finger pinch**: Scale animal
+   - **Tap "Detail Hewan"**: View educational information
 
-## 🎮 Controls
+## 📁 Project Structure
 
-| Action | Gesture |
-|--------|---------|
-| Place Animal | Single Tap |
-| Move Animal | Drag |
-| Rotate Animal | Two-finger Rotate |
-| Scale Animal | Pinch |
-| View Info | Info Button |
-| Change Animal | Menu Button |
+```
+eduFauna/
+├── Assets/
+│   ├── Scenes/
+│   │   ├── SplashScreen.unity
+│   │   ├── AnimalSelection.unity
+│   │   └── ARScene.unity
+│   ├── Scripts/
+│   │   ├── GameManager.cs              # Core game logic
+│   │   ├── AnimalData.cs               # Animal data model
+│   │   ├── VuforiaAnimalSpawner.cs     # Spawn animal on plane
+│   │   ├── ARAnimalInteraction.cs      # Touch gestures
+│   │   ├── ARUIController.cs           # AR UI management
+│   │   ├── AnimalSelectionController.cs # Selection screen
+│   │   └── SceneLoader.cs              # Scene management
+│   ├── Prefabs/
+│   │   └── Animals/                    # 3D animal models
+│   ├── Resources/
+│   │   └── UI/Illustrations/           # Animal icons
+│   └── Materials/                      # Materials & shaders
+└── README.md
+```
 
-## 🐛 Troubleshooting
+## 🐾 Animals Included
 
-**AR Not Working?**
-- Ensure device supports ARCore
-- Check camera permissions
-- Test in well-lit environment
+1. **🐘 Gajah (Elephant)**
+   - Habitat: Tropical forests and African savanna
+   - Food: Grass, leaves, bark, fruits
 
-**Build Errors?**
-- Verify IL2CPP is selected
-- Check ARM64 is enabled
-- Clear Library folder and reimport
+2. **🦁 Singa (Lion)**
+   - Habitat: African savanna and grasslands
+   - Food: Carnivore - zebra, deer, buffalo
 
-## 📚 Resources
+3. **🐋 Paus Orca (Orca)**
+   - Habitat: Oceans worldwide, especially cold waters
+   - Food: Fish, seals, penguins, even other whales
 
-- [Unity Documentation](https://docs.unity3d.com)
-- [AR Foundation Docs](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@latest)
-- [ARCore Developer Guide](https://developers.google.com/ar)
+4. **🐧 Penguin**
+   - Habitat: Antarctica and southern cold regions
+   - Food: Fish, krill, squid
 
-## 📄 License
+5. **🦓 Zebra**
+   - Habitat: African grasslands and savanna
+   - Food: Grass, leaves, bark
 
-This project is created for educational purposes.
+## 🔧 Troubleshooting
+
+### Plane Detection is Slow
+- Ensure **good lighting** (bright, natural light)
+- Use **textured surfaces** (tile floor, patterned carpet)
+- Avoid **reflective surfaces** (glass, shiny floors)
+- Move device **slowly** in horizontal motion
+
+### Animal Not Appearing
+- Check if animal is selected in Animal Selection screen
+- Ensure Vuforia license key is configured
+- Check Console for error messages
+
+### Touch Interactions Not Working
+- Ensure `ARAnimalInteraction.cs` is attached to spawned animal
+- Check if UI is blocking touch input
+- Verify device supports multi-touch
+
+## 📝 License
+
+This project is for educational purposes.
 
 ## 👨‍💻 Developer
 
-**Kholi Mustofa**
+**Kholil Mustofa**
 - GitHub: [@kholilmustofa](https://github.com/kholilmustofa)
-- Email: kholilmoestofa954@gmail.com
+
+## 🙏 Acknowledgments
+
+- 3D Models: Various sources (check individual model credits)
+- Vuforia Engine: PTC Inc.
+- Unity Technologies
 
 ---
 
-**Version**: 1.0  
-**Last Updated**: December 2025  
-**Built with**: Unity 6 & AR Foundation 6.0
+**Made with ❤️ for education**
