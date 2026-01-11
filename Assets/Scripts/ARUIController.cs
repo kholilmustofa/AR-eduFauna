@@ -152,17 +152,17 @@ public class ARUIController : MonoBehaviour
         
         if (habitatText != null)
         {
-            habitatText.text = "<b>Habitat:</b>\n" + animal.habitat;
+            habitatText.text = animal.habitat;
         }
         
         if (foodText != null)
         {
-            foodText.text = "<b>Makanan:</b>\n" + animal.food;
+            foodText.text = animal.food;
         }
         
         if (characteristicsText != null)
         {
-            characteristicsText.text = "<b>Karakteristik:</b>\n" + animal.characteristics;
+            characteristicsText.text = animal.characteristics;
         }
         
         // Animal icon removed - not used

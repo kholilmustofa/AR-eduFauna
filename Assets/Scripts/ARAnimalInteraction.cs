@@ -60,161 +60,122 @@ public class ARAnimalInteraction : MonoBehaviour
         
         if (Input.touchCount == 1)
             HandleSingleTouch();
-
         else if (Input.touchCount == 2)
             HandleTwoFingerGesture();
+        // MOUSE FALLBACK FOR EDITOR TESTING
+        #if UNITY_EDITOR
+        else if (Input.GetMouseButton(0))
+            HandleMouseInteraction();
+        #endif
+    }
+
+    void HandleMouseInteraction()
+    {
+        // ROTASI: Klik Kiri + Geser Mouse (Horizontal)
+        float rotSpeedModifier = rotationSpeed * 50f;
+        float mouseX = Input.GetAxis("Mouse X");
+        
+        if (Mathf.Abs(mouseX) > 0.1f)
+        {
+            transform.Rotate(Vector3.up, -mouseX * rotSpeedModifier * Time.deltaTime, Space.World);
+        }
     }
 
     // ======================================================
-    // SINGLE TOUCH (DRAG)
+    // SINGLE TOUCH (DRAG OR ROTATE)
     // ======================================================
     void HandleSingleTouch()
     {
-        if (!enableDrag) return;
-
         Touch touch = Input.GetTouch(0);
 
         if (touch.phase == TouchPhase.Began)
         {
-            if (IsTouchingObject(touch.position, out RaycastHit hit))
-            {
-                isDragging = true;
-                yOffsetToPlane = transform.position.y - hit.point.y;
-                Debug.Log($"[AR Interaction] Started dragging {gameObject.name}");
-            }
-        }
-        else if (touch.phase == TouchPhase.Moved && isDragging)
-        {
-            DragOnPlane(touch.position);
-        }
-        else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
-        {
+            // Cek apakah menyentuh hewan
+            isDragging = IsTouchingObject(touch.position, out RaycastHit hit);
             if (isDragging)
             {
-                Debug.Log($"[AR Interaction] Stopped dragging {gameObject.name}");
+                yOffsetToPlane = transform.position.y - hit.point.y;
             }
+        }
+        else if (touch.phase == TouchPhase.Moved)
+        {
+            // ROTASI: 1 Jari (Selalu bisa rotasi jika tidak sedang menyeret posisi)
+            if (enableRotation && Mathf.Abs(touch.deltaPosition.x) > 1.0f)
+            {
+                float rotSpeedModifier = rotationSpeed * 20f;
+                transform.Rotate(Vector3.up, -touch.deltaPosition.x * rotSpeedModifier * Time.deltaTime, Space.World);
+            }
+            
+            // DRAG: Pindah posisi (Hanya jika awal touch kena badan hewan)
+            if (enableDrag && isDragging && Mathf.Abs(touch.deltaPosition.y) > Mathf.Abs(touch.deltaPosition.x))
+            {
+                DragWithPhysics(touch.position);
+            }
+        }
+        else if (touch.phase == TouchPhase.Ended)
+        {
             isDragging = false;
         }
     }
 
-    void DragOnPlane(Vector2 screenPos)
+    void DragWithPhysics(Vector2 screenPos)
     {
-        if (raycastManager == null) return;
-
-        if (raycastManager.Raycast(screenPos, hits, TrackableType.PlaneWithinPolygon))
+        Ray ray = arCamera.ScreenPointToRay(screenPos);
+        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+        if (groundPlane.Raycast(ray, out float distance))
         {
-            Pose hitPose = hits[0].pose;
-            transform.position = hitPose.position + Vector3.up * yOffsetToPlane;
+            Vector3 targetPoint = ray.GetPoint(distance);
+            transform.position = new Vector3(targetPoint.x, transform.position.y, targetPoint.z);
         }
     }
 
-    // ======================================================
-    // TWO FINGER (ROTATE + SCALE)
-    // ======================================================
     void HandleTwoFingerGesture()
     {
         Touch t0 = Input.GetTouch(0);
         Touch t1 = Input.GetTouch(1);
 
-        // Minimal 1 jari menyentuh objek
-        if (!IsTouchingObject(t0.position) && !IsTouchingObject(t1.position))
-            return;
-
-        isDragging = false;
-
         if (t0.phase == TouchPhase.Began || t1.phase == TouchPhase.Began)
         {
             initialPinchDistance = Vector2.Distance(t0.position, t1.position);
             baseScale = transform.localScale;
-            Debug.Log($"[AR Interaction] Started 2-finger gesture on {gameObject.name}");
         }
         else if (t0.phase == TouchPhase.Moved || t1.phase == TouchPhase.Moved)
         {
-            HandleRotation(t0, t1);
-            HandleScale(t0, t1);
+            // ZOOM: Pinch with 2 fingers
+            if (enableScale && initialPinchDistance > 0.01f)
+            {
+                float currentDistance = Vector2.Distance(t0.position, t1.position);
+                float factor = currentDistance / initialPinchDistance;
+                Vector3 targetScale = baseScale * factor;
+
+                // Batas Scale
+                float minS = initialModelScale.x * minScaleMultiplier;
+                float maxS = initialModelScale.x * maxScaleMultiplier;
+                targetScale.x = Mathf.Clamp(targetScale.x, minS, maxS);
+                targetScale.y = Mathf.Clamp(targetScale.y, minS, maxS);
+                targetScale.z = Mathf.Clamp(targetScale.z, minS, maxS);
+
+                transform.localScale = targetScale;
+            }
         }
-        else if (t0.phase == TouchPhase.Ended || t1.phase == TouchPhase.Ended)
-        {
-            Debug.Log($"[AR Interaction] Ended 2-finger gesture on {gameObject.name}");
-        }
-    }
-
-    void HandleRotation(Touch t0, Touch t1)
-    {
-        if (!enableRotation) return;
-
-        Vector2 prevPos0 = t0.position - t0.deltaPosition;
-        Vector2 prevPos1 = t1.position - t1.deltaPosition;
-
-        float prevAngle = Mathf.Atan2(
-            prevPos1.y - prevPos0.y,
-            prevPos1.x - prevPos0.x
-        ) * Mathf.Rad2Deg;
-
-        float currAngle = Mathf.Atan2(
-            t1.position.y - t0.position.y,
-            t1.position.x - t0.position.x
-        ) * Mathf.Rad2Deg;
-
-        float delta = currAngle - prevAngle;
-        transform.Rotate(Vector3.up, -delta * rotationSpeed, Space.World);
-    }
-
-    void HandleScale(Touch t0, Touch t1)
-    {
-        if (!enableScale || initialPinchDistance <= 0f) return;
-
-        float currentDistance = Vector2.Distance(t0.position, t1.position);
-        float factor = currentDistance / initialPinchDistance;
-
-        Vector3 newScale = baseScale * factor;
-
-        newScale.x = Mathf.Clamp(
-            newScale.x,
-            initialModelScale.x * minScaleMultiplier,
-            initialModelScale.x * maxScaleMultiplier
-        );
-
-        newScale.y = Mathf.Clamp(
-            newScale.y,
-            initialModelScale.y * minScaleMultiplier,
-            initialModelScale.y * maxScaleMultiplier
-        );
-
-        newScale.z = Mathf.Clamp(
-            newScale.z,
-            initialModelScale.z * minScaleMultiplier,
-            initialModelScale.z * maxScaleMultiplier
-        );
-
-        transform.localScale = newScale;
-    }
-
-    // ======================================================
-    // HIT TEST
-    // ======================================================
-    bool IsTouchingObject(Vector2 screenPos)
-    {
-        return IsTouchingObject(screenPos, out _);
     }
 
     bool IsTouchingObject(Vector2 screenPos, out RaycastHit hit)
     {
         Ray ray = arCamera.ScreenPointToRay(screenPos);
-
-        if (Physics.Raycast(ray, out hit))
+        // Raycast all untuk memastikan tidak terhalang collider transparan
+        RaycastHit[] allHits = Physics.RaycastAll(ray, 100f);
+        
+        foreach (var h in allHits)
         {
-            bool isTouching = hit.transform == transform ||
-                   hit.transform.IsChildOf(transform);
-            
-            if (isTouching)
+            if (h.transform == transform || h.transform.IsChildOf(transform))
             {
-                Debug.Log($"[AR Interaction] Touch hit {hit.transform.name}");
+                hit = h;
+                return true;
             }
-            
-            return isTouching;
         }
 
+        hit = new RaycastHit();
         return false;
     }
 }

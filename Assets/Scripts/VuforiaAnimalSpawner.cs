@@ -39,10 +39,11 @@ public class VuforiaAnimalSpawner : MonoBehaviour
         // Get spawn position from hit result
         Vector3 spawnPosition = transform.position;
         
-        // Face camera
+        // Face camera (User)
         Vector3 cameraForward = Camera.main.transform.forward;
         cameraForward.y = 0;
-        Quaternion spawnRotation = Quaternion.LookRotation(cameraForward);
+        // Gunakan -cameraForward agar hewan menghadap ke User (Kamera)
+        Quaternion spawnRotation = Quaternion.LookRotation(-cameraForward);
         
         // Spawn animal
         spawnedAnimal = Instantiate(prefab, spawnPosition, spawnRotation);
@@ -67,7 +68,7 @@ public class VuforiaAnimalSpawner : MonoBehaviour
             spawnedAnimal.AddComponent<ARAnimalInteraction>();
         }
         
-        // Setup animation
+        // Setup animation (Idle only, no walking away)
         SetupAnimation(spawnedAnimal);
         
         // Lock placement
@@ -122,10 +123,14 @@ public class VuforiaAnimalSpawner : MonoBehaviour
     void SetupAnimation(GameObject obj)
     {
         Animator animator = obj.GetComponent<Animator>();
-        if (animator != null && animator.runtimeAnimatorController != null)
+        if (animator == null) animator = obj.GetComponentInChildren<Animator>();
+
+        if (animator != null)
         {
             animator.enabled = true;
-            Debug.Log("[Vuforia] Animator found and enabled");
+            // PENTING: Matikan Root Motion agar hewan tidak jalan-jalan kabur dari titik spawn
+            animator.applyRootMotion = false; 
+            Debug.Log($"[Vuforia] Animator enabled for {obj.name} with Root Motion disabled");
         }
     }
 }
